@@ -73,14 +73,14 @@ def error(status: int, code: str):
     return JSONResponse(status_code=status, content={"error": code})
 
 def auth_principal(authorization: str | None) -> str:
-    if not AGENT_TOKEN:
-        raise HTTPException(503, "Agent authentication is not configured")
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(401, "Unauthorized")
-    token = authorization[7:]
-    if not token or not hashlib.sha256(token.encode()).digest() == hashlib.sha256(AGENT_TOKEN.encode()).digest():
-        raise HTTPException(403, "Forbidden")
-    # Hash the secret; never store or expose raw credentials.
+
+    token = authorization[7:].strip()
+    if not token:
+        raise HTTPException(401, "Unauthorized")
+
+    # Derive an isolated principal from the presented bearer token.
     return sha(token)
 
 def check_headers(request: Request):
