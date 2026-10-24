@@ -21,10 +21,25 @@ ALLOWED_ACTIONS = {"settle_invoice", "request_approval", "hold_invoice", "reject
 TERMINAL = {"TASK_STATE_COMPLETED", "TASK_STATE_CANCELED"}
 
 app = FastAPI(title="A2A Invoice Action Agent", version=APP_VERSION)
-app.add_middleware(CORSMiddleware, allow_origins=[], allow_methods=["GET","POST"], allow_headers=["Authorization","A2A-Version","Content-Type"])
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[],
+    allow_methods=["GET", "POST"],
+    allow_headers=["Authorization", "A2A-Version", "Content-Type"]
+)
+
+@app.middleware("http")
+async def a2a_content_type_middleware(request: Request, call_next):
+    response = await call_next(request)
+
+    if request.url.path.startswith(BASE_PATH + "/"):
+        content_type = response.headers.get("content-type", "")
+        if response.status_code < 400 and content_type.startswith("application/json"):
+            response.headers["content-type"] = "application/a2a+json"
+
+    return response
 
 db_lock = threading.RLock()
-
 def canonical(obj: Any) -> str:
     return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
