@@ -237,7 +237,7 @@ def save_task(c, task):
 def agent_card(request: Request):
     # Base URL is origin + configured base path, and must match the submitted URL.
     origin = str(request.base_url).rstrip("/")
-    base_url = origin + BASE_PATH + "/"
+    base_url = origin + BASE_PATH
     return {
       "name":"A2A Invoice Action Agent",
       "description":"Evidence-based invoice action proposals with approval-gated execution and persistent task state.",
@@ -388,3 +388,4 @@ def cancel_task(task_id: str, request: Request, authorization: str | None = Head
 @app.get("/healthz")
 def healthz():
     return {"ok": True, "version": APP_VERSION}
+
