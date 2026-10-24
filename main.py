@@ -154,7 +154,7 @@ For every package return packageId, action, facts {vendorName, invoiceNumber, am
         ]
     }
 
-    with httpx.Client(timeout=35) as client:
+    with httpx.Client(timeout=120) as client:
         r = client.post(AI_BASE_URL + "/chat/completions",
             headers={"Authorization":"Bearer " + AI_API_KEY, "Content-Type":"application/json"}, json=req)
         r.raise_for_status()
