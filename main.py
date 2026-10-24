@@ -5,7 +5,7 @@ import httpx
 from fastapi import FastAPI, Request, Header, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-
+from concurrent.futures import ThreadPoolExecutor
 APP_VERSION = "1.0.0"
 BASE_PATH = os.getenv("BASE_PATH", "/a2a").rstrip("/")
 DB_PATH = os.getenv("DB_PATH", "/data/invoice_agent.sqlite3")
@@ -213,7 +213,17 @@ def propose(packages: list[dict]) -> list[dict]:
             else:
                 missing.append((p, key))
     if missing:
-        fresh = call_ai([p for p, _ in missing])
+        # Split large batches into smaller AI requests and run them concurrently.
+        packages_to_process = [p for p, _ in missing]
+        chunks = [
+            packages_to_process[i:i + 3]
+            for i in range(0, len(packages_to_process), 3)
+        ]
+
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            responses = list(executor.map(call_ai, chunks))
+
+        fresh = [item for response in responses for item in response]
         with conn() as c:
             for (p, key), item in zip(missing, fresh):
                 results[str(p["packageId"])] = item
