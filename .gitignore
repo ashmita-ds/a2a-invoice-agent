@@ -1,0 +1,15 @@
+__pycache__/
+.venv/
+.env
+*.sqlite3
+data/
+
+# Local data and generated files
+__pycache__/
+*.py[cod]
+data/
+*.sqlite3
+.venv/
+.env
+.env.*
+!.env.example

@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: a2a-invoice-agent
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /healthz
+    envVars:
+      - key: BASE_PATH
+        value: /a2a
+      - key: DB_PATH
+        value: /data/invoice_agent.sqlite3
+      - key: AGENT_TOKEN
+        sync: false
+      - key: AI_API_KEY
+        sync: false
+      - key: AI_BASE_URL
+        value: https://api.groq.com/openai/v1
+      - key: AI_MODEL
+        value: llama-3.1-8b-instant
